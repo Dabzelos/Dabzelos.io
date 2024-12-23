@@ -74,6 +74,69 @@
         <li><a href="#portfolio"><i class="bi bi-images navicon"></i> Фото</a></li>
         <li><a href="#testimonials"><i class="bi bi-people navicon"></i> Друзья</a></li>
       </ul>
+      <div id="auth-container">
+        <div id="auth-widget"></div>
+      </div>
+      <div id="user-info" style="display: none;">
+        Добро пожаловать, <span id="user-name"></span>!
+      </div>
+
+      <script src="https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js"></script>
+      <script type="text/javascript">
+        if ('VKIDSDK' in window) {
+          const VKID = window.VKIDSDK;
+
+          VKID.Config.init({
+            app: 52878451,
+            redirectUrl: 'https://dabzelos.github.io/',
+            responseMode: VKID.ConfigResponseMode.Callback,
+            source: VKID.ConfigSource.LOWCODE,
+            scope: '', // Укажите необходимые доступы
+          });
+
+          const oAuth = new VKID.OAuthList();
+
+          oAuth.render({
+            container: document.getElementById('auth-widget'),
+            scheme: 'dark',
+            styles: {
+              borderRadius: 16
+            },
+            oauthList: [
+              'vkid',
+              'ok_ru',
+              'mail_ru'
+            ]
+          })
+            .on(VKID.WidgetEvents.ERROR, vkidOnError)
+            .on(VKID.OAuthListInternalEvents.LOGIN_SUCCESS, function (payload) {
+              const code = payload.code;
+              const deviceId = payload.device_id;
+
+              VKID.Auth.exchangeCode(code, deviceId)
+                .then(vkidOnSuccess)
+                .catch(vkidOnError);
+            });
+
+          function vkidOnSuccess(data) {
+            // Данные из ответа (пример: { profile: { first_name, last_name } })
+            const profile = data.profile;
+            if (profile && profile.first_name) {
+              // Отображаем имя пользователя
+              document.getElementById('user-name').textContent = profile.first_name;
+
+              // Скрываем виджет авторизации и показываем приветствие
+              document.getElementById('auth-container').style.display = 'none';
+              document.getElementById('user-info').style.display = 'block';
+            }
+          }
+
+          function vkidOnError(error) {
+            console.error('Authorization error:', error);
+            alert('Ошибка авторизации: ' + error.message);
+          }
+        }
+      </script>
     </nav>
 
   </header>
@@ -595,7 +658,8 @@
               </svg></div>
             <div>
               <h4 class="title">VCS</a></h4>
-              <p class="description">Умею работать с такими системами контроля версий как GitHub и Gitlab.</p>
+              <p class="description">Умею работать с такими системами контроля версий как git, а так же с GitHub и
+                Gitlab.</p>
             </div>
           </div>
           <!-- End Service Item -->
